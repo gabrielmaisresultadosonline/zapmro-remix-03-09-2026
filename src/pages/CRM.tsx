@@ -162,6 +162,7 @@ import {
   syncSettingsIntoNumbers,
   type WhatsAppNumberRecord,
 } from "@/lib/whatsappNumbers";
+import { buildMetaBillingUrl, buildMetaTemplatesUrl } from "@/lib/metaBusinessLinks";
 import {
   getActiveWhatsAppNumberId,
   setActiveWhatsAppNumberId,
