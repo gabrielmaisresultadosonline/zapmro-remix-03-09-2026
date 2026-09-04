@@ -162,6 +162,7 @@ import {
   syncSettingsIntoNumbers,
   type WhatsAppNumberRecord,
 } from "@/lib/whatsappNumbers";
+import { buildMetaBillingUrl, buildMetaTemplatesUrl } from "@/lib/metaBusinessLinks";
 import {
   getActiveWhatsAppNumberId,
   setActiveWhatsAppNumberId,
@@ -8542,9 +8543,13 @@ const CRM = () => {
                         size="sm"
                         className="text-[10px] h-8 text-muted-foreground hover:text-primary transition-colors"
                         onClick={() => {
-                          const businessId = metaSettings.meta_business_id || '221547625588933';
-                          const wabaId = metaSettings.meta_waba_id || '1885027082212076';
-                          window.open(`https://business.facebook.com/latest/whatsapp_manager/message_templates?business_id=${businessId}&asset_id=${wabaId}`, '_blank');
+                          // Cada cadastro tem o seu portfólio/WABA. Sem IDs próprios não abrimos nada.
+                          const url = buildMetaTemplatesUrl({ businessId: metaSettings.meta_business_id, wabaId: metaSettings.meta_waba_id });
+                          if (!url) {
+                            toast({ title: 'Conecte seu WhatsApp primeiro', description: 'Ainda não identificamos o portfólio e a conta do WhatsApp deste cadastro.', variant: 'destructive' });
+                            return;
+                          }
+                          window.open(url, '_blank');
                         }}
                       >
                         <ExternalLink className="w-3 h-3 mr-1" />
@@ -8611,9 +8616,13 @@ const CRM = () => {
                             size="sm" 
                             className="text-primary font-bold"
                             onClick={() => {
-                              const businessId = metaSettings.meta_business_id || '221547625588933';
-                              const wabaId = metaSettings.meta_waba_id || '1885027082212076';
-                              window.open(`https://business.facebook.com/latest/whatsapp_manager/message_templates?business_id=${businessId}&asset_id=${wabaId}`, '_blank');
+                              // Cada cadastro tem o seu portfólio/WABA. Sem IDs próprios não abrimos nada.
+                              const url = buildMetaTemplatesUrl({ businessId: metaSettings.meta_business_id, wabaId: metaSettings.meta_waba_id });
+                              if (!url) {
+                                toast({ title: 'Conecte seu WhatsApp primeiro', description: 'Ainda não identificamos o portfólio e a conta do WhatsApp deste cadastro.', variant: 'destructive' });
+                                return;
+                              }
+                              window.open(url, '_blank');
                             }}
                           >
                             <ExternalLink className="w-3.5 h-3.5 mr-1" /> Gerenciar na Meta
@@ -8767,9 +8776,13 @@ const CRM = () => {
                           size="sm" 
                           className="text-primary font-bold mt-2"
                           onClick={() => {
-                            const businessId = metaSettings.meta_business_id || '221547625588933';
-                            const wabaId = metaSettings.meta_waba_id || '1885027082212076';
-                            window.open(`https://business.facebook.com/latest/whatsapp_manager/message_templates?business_id=${businessId}&asset_id=${wabaId}`, '_blank');
+                            // Cada cadastro tem o seu portfólio/WABA. Sem IDs próprios não abrimos nada.
+                            const url = buildMetaTemplatesUrl({ businessId: metaSettings.meta_business_id, wabaId: metaSettings.meta_waba_id });
+                            if (!url) {
+                              toast({ title: 'Conecte seu WhatsApp primeiro', description: 'Ainda não identificamos o portfólio e a conta do WhatsApp deste cadastro.', variant: 'destructive' });
+                              return;
+                            }
+                            window.open(url, '_blank');
                           }}
                         >
                           <ExternalLink className="w-3.5 h-3.5 mr-1" /> Ver todos no Gerenciador da Meta
@@ -9765,10 +9778,13 @@ const CRM = () => {
                           <Button 
                             className="w-full h-12 bg-[#00875A] hover:bg-[#00875A]/90 text-white font-bold rounded-xl shadow-lg shadow-[#00875A]/20 gap-2"
                             onClick={() => {
-                              const businessId = metaSettings.meta_business_id || '221547625588933';
-                              const wabaId = metaSettings.meta_waba_id || '1885027082212076';
-                              // Link dinâmico baseado na estrutura do Billing Hub da Meta enviada
-                              window.open(`https://business.facebook.com/latest/billing_hub/accounts/details/?asset_id=${wabaId}&business_id=${businessId}&placement=whatsapp_ads`, '_blank');
+                              // Billing Hub do próprio usuário: usa apenas os IDs deste cadastro/número.
+                              const url = buildMetaBillingUrl({ businessId: metaSettings.meta_business_id, wabaId: metaSettings.meta_waba_id });
+                              if (!url) {
+                                toast({ title: 'Conecte seu WhatsApp primeiro', description: 'Precisamos do portfólio da Meta deste cadastro para abrir a sua central de pagamentos.', variant: 'destructive' });
+                                return;
+                              }
+                              window.open(url, '_blank');
                             }}
                           >
                             <CreditCard className="w-5 h-5" />
