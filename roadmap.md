@@ -18,3 +18,5 @@
 - [x] Templates Meta: variáveis/imagem/botões editáveis no envio (disparador, agendamento, conversa), presets salvos (migration 096), validação estrutural na Edge Function, registro de cliques em resposta rápida e tutorial Utility no criador.
 
 - [x] Módulo /acessor: landing, login/cadastro com 2 dias de teste, dashboard do cliente, admin (OpenAI + WhatsApp oficial/coexistência), webhook com transcrição de áudio e migration 097.
+
+- [x] /crm: links da Meta (pagamentos e modelos) usam o portfólio/WABA de cada cadastro — Billing Hub por cadastro, sem IDs fixos.
