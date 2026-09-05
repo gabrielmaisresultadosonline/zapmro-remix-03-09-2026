@@ -47,21 +47,59 @@ const PAGE = 1000;
 /** Não baixamos arquivos gigantes para hashear: risco de travar o navegador. */
 const MAX_HASH_BYTES = 25 * 1024 * 1024;
 
-export function hasRunDedupeScan(userId: string): boolean {
+/**
+ * A marca de "já rodou" fica na NUVEM (crm_settings.media_dedupe_done_at), para
+ * que o painel apareça apenas uma vez por cadastro — não uma vez por navegador.
+ * O localStorage segue como cache local (evita rodar duas vezes em abas
+ * simultâneas antes da gravação na nuvem).
+ */
+export async function hasRunDedupeScan(userId: string): Promise<boolean> {
   try {
-    return localStorage.getItem(`${STORAGE_KEY_PREFIX}${userId}`) === "done";
+    if (localStorage.getItem(`${STORAGE_KEY_PREFIX}${userId}`) === "done") return true;
   } catch {
-    return true; // sem localStorage, não insistimos na varredura
+    /* localStorage indisponível: seguimos consultando a nuvem */
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("crm_settings")
+      .select("media_dedupe_done_at")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    // Erro de leitura (ou coluna ainda não migrada): não insistimos na varredura.
+    if (error) {
+      console.warn("[dedupe] não foi possível ler a marca na nuvem; varredura ignorada", error.message);
+      return true;
+    }
+
+    const doneAt = (data as { media_dedupe_done_at?: string | null } | null)?.media_dedupe_done_at ?? null;
+    return Boolean(doneAt);
+  } catch (err) {
+    console.warn("[dedupe] falha ao consultar a marca na nuvem; varredura ignorada", err);
+    return true;
   }
 }
 
-export function markDedupeScanDone(userId: string) {
+export async function markDedupeScanDone(userId: string): Promise<void> {
   try {
     localStorage.setItem(`${STORAGE_KEY_PREFIX}${userId}`, "done");
   } catch {
-    /* ignorado: só perde a memória de "já rodou" */
+    /* ignorado: só perde o cache local */
+  }
+
+  try {
+    const { error } = await supabase
+      .from("crm_settings")
+      .update({ media_dedupe_done_at: new Date().toISOString() })
+      .eq("user_id", userId);
+    if (error) console.warn("[dedupe] não foi possível gravar a marca na nuvem", error.message);
+    else console.log("[dedupe] marca de conclusão gravada na nuvem para", userId);
+  } catch (err) {
+    console.warn("[dedupe] falha ao gravar a marca na nuvem", err);
   }
 }
+
 
 interface MessageRow {
   id: string;
