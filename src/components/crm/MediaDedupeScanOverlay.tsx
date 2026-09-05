@@ -65,43 +65,54 @@ export const MediaDedupeScanOverlay = ({ userId, onFinished }: MediaDedupeScanOv
       setProgress(first);
       console.log("[dedupe] varredura iniciada em segundo plano para", userId);
 
-
-    // Sincroniza a barra com o progresso mais recente 4x por segundo.
-    const ticker = window.setInterval(() => {
-      if (cancelled) return;
-      const latest = latestRef.current;
-      setProgress((prev) => {
-        if (!latest) return prev;
-        if (prev && prev.percent === latest.percent && prev.step === latest.step && prev.done === latest.done) {
-          return prev;
-        }
-        return { ...latest };
-      });
-    }, 250);
-
-    (async () => {
-      try {
-        const result = await runMediaDedupeScan(userId, (p) => {
-          latestRef.current = p;
-        });
-        markDedupeScanDone(userId);
+      // Sincroniza a barra com o progresso mais recente 4x por segundo.
+      ticker = window.setInterval(() => {
         if (cancelled) return;
-        latestRef.current = { step: "Concluído", percent: 100 };
-        setProgress(latestRef.current);
-        console.log("[dedupe] varredura concluída", result);
-        if (result.duplicatesRemoved > 0) {
-          toast({
-            title: "Armazenamento otimizado",
-            description: `${result.duplicatesRemoved} arquivo(s) duplicado(s) unificado(s) — ${formatBytes(result.bytesFreed)} liberados.`,
+        const latest = latestRef.current;
+        setProgress((prev) => {
+          if (!latest) return prev;
+          if (prev && prev.percent === latest.percent && prev.step === latest.step && prev.done === latest.done) {
+            return prev;
+          }
+          return { ...latest };
+        });
+      }, 250);
+
+      void (async () => {
+        try {
+          const result = await runMediaDedupeScan(userId, (p) => {
+            latestRef.current = p;
           });
+          await markDedupeScanDone(userId);
+          if (cancelled) return;
+          latestRef.current = { step: "Concluído", percent: 100 };
+          setProgress(latestRef.current);
+          console.log("[dedupe] varredura concluída", result);
+          if (result.duplicatesRemoved > 0) {
+            toast({
+              title: "Armazenamento otimizado",
+              description: `${result.duplicatesRemoved} arquivo(s) duplicado(s) unificado(s) — ${formatBytes(result.bytesFreed)} liberados.`,
+            });
+          }
+          onFinished?.();
+        } catch (error) {
+          console.error("[dedupe] varredura falhou", error);
+        } finally {
+          window.clearInterval(ticker);
+          if (!cancelled) setTimeout(() => setProgress(null), 1200);
         }
-        onFinished?.();
-      } catch (error) {
-        console.error("[dedupe] varredura falhou", error);
-      } finally {
-        window.clearInterval(ticker);
-        if (!cancelled) setTimeout(() => setProgress(null), 1200);
+      })();
+    };
+
+    // Consulta a nuvem: se já rodou para este cadastro, nada aparece.
+    void (async () => {
+      const already = await hasRunDedupeScan(userId);
+      if (cancelled) return;
+      if (already) {
+        console.log("[dedupe] varredura já concluída anteriormente — painel não será exibido");
+        return;
       }
+      start();
     })();
 
     return () => {
@@ -109,6 +120,7 @@ export const MediaDedupeScanOverlay = ({ userId, onFinished }: MediaDedupeScanOv
       window.clearInterval(ticker);
     };
   }, [userId, onFinished, toast]);
+
 
 
   const onPointerDown = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
