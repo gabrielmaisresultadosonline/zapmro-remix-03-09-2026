@@ -1495,6 +1495,7 @@ export type Database = {
           meta_display_phone_number: string | null
           meta_phone_number_id: string | null
           meta_verified_name: string | null
+          media_dedupe_done_at: string | null
           meta_waba_id: string | null
           openai_api_key: string | null
           outside_hours_message: string | null
@@ -1551,6 +1552,7 @@ export type Database = {
           meta_display_phone_number?: string | null
           meta_phone_number_id?: string | null
           meta_verified_name?: string | null
+          media_dedupe_done_at?: string | null
           meta_waba_id?: string | null
           openai_api_key?: string | null
           outside_hours_message?: string | null
@@ -1607,6 +1609,7 @@ export type Database = {
           meta_display_phone_number?: string | null
           meta_phone_number_id?: string | null
           meta_verified_name?: string | null
+          media_dedupe_done_at?: string | null
           meta_waba_id?: string | null
           openai_api_key?: string | null
           outside_hours_message?: string | null
