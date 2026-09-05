@@ -54,14 +54,17 @@ export const MediaDedupeScanOverlay = ({ userId, onFinished }: MediaDedupeScanOv
 
   useEffect(() => {
     if (!userId || startedRef.current) return;
-    if (hasRunDedupeScan(userId)) return;
     startedRef.current = true;
 
     let cancelled = false;
-    const first: DedupeProgress = { step: "Preparando a verificação...", percent: 2 };
-    latestRef.current = first;
-    setProgress(first);
-    console.log("[dedupe] varredura iniciada em segundo plano para", userId);
+    let ticker = 0;
+
+    const start = () => {
+      const first: DedupeProgress = { step: "Preparando a verificação...", percent: 2 };
+      latestRef.current = first;
+      setProgress(first);
+      console.log("[dedupe] varredura iniciada em segundo plano para", userId);
+
 
     // Sincroniza a barra com o progresso mais recente 4x por segundo.
     const ticker = window.setInterval(() => {
