@@ -20,3 +20,5 @@
 - [x] Módulo /acessor: landing, login/cadastro com 2 dias de teste, dashboard do cliente, admin (OpenAI + WhatsApp oficial/coexistência), webhook com transcrição de áudio e migration 097.
 
 - [x] /crm: links da Meta (pagamentos e modelos) usam o portfólio/WABA de cada cadastro — Billing Hub por cadastro, sem IDs fixos.
+
+- [x] Otimizador de armazenamento: marcar conclusão na nuvem (crm_settings.media_dedupe_done_at) para aparecer apenas uma vez por cadastro, em qualquer navegador.
